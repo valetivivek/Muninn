@@ -80,7 +80,7 @@ export function Upgrade({ settings }: { settings: Settings }) {
   }
 
   return (
-    <div className="flex h-full flex-col gap-3">
+    <div className="flex flex-col gap-3">
       <Segmented<Mode>
         label="Upgrade mode"
         value={mode}
@@ -91,14 +91,22 @@ export function Upgrade({ settings }: { settings: Settings }) {
         ]}
       />
 
-      <div className="grid grid-cols-1 gap-2">
-        <Segmented<Tone> label="Tone" value={tone} onChange={setTone} options={TONE_OPTIONS} />
-        <Segmented<Aggressiveness>
-          label="Revision strength"
-          value={aggressiveness}
-          onChange={setAggressiveness}
-          options={AGGR_OPTIONS}
-        />
+      <div className="grid grid-cols-1 gap-3">
+        <div className="flex flex-col gap-1">
+          <span className="text-2xs font-medium uppercase tracking-wide text-muted">Tone</span>
+          <Segmented<Tone> label="Tone" value={tone} onChange={setTone} options={TONE_OPTIONS} />
+        </div>
+        <div className="flex flex-col gap-1">
+          <span className="text-2xs font-medium uppercase tracking-wide text-muted">
+            Revision strength
+          </span>
+          <Segmented<Aggressiveness>
+            label="Revision strength"
+            value={aggressiveness}
+            onChange={setAggressiveness}
+            options={AGGR_OPTIONS}
+          />
+        </div>
       </div>
 
       <label className="flex flex-col gap-1">
@@ -112,7 +120,7 @@ export function Upgrade({ settings }: { settings: Settings }) {
       </label>
 
       {mode === 'byok' && !hasKey && (
-        <p className="rounded-lg bg-surface-2 px-3 py-2 text-xs text-muted">
+        <p className="rounded-lg bg-surface-2 px-3 py-2 text-xs leading-relaxed text-muted">
           No API key set. Add one in{' '}
           <button
             className="text-accent hover:underline"
@@ -128,14 +136,14 @@ export function Upgrade({ settings }: { settings: Settings }) {
         {busy ? 'Upgrading…' : 'Upgrade prompt'}
       </Button>
 
-      <label className="flex min-h-0 flex-1 flex-col gap-1">
+      <label className="flex flex-col gap-1">
         <span className="text-2xs font-medium uppercase tracking-wide text-muted">Refined prompt</span>
         <TextArea
           value={output}
           rows={6}
           readOnly
           placeholder="Your refined prompt will appear here."
-          className="min-h-[6rem] flex-1"
+          className="min-h-[6rem]"
           aria-label="Refined prompt"
         />
       </label>

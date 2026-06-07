@@ -88,8 +88,7 @@ function mount() {
   shadow.appendChild(style);
 
   const mountEl = document.createElement('div');
-  // Adopt the host AI's palette so the launcher reads as a native feature.
-  mountEl.className = `mn-site-${base.id}`;
+  mountEl.className = 'mn-root';
   shadow.appendChild(mountEl);
   document.body.appendChild(host);
 

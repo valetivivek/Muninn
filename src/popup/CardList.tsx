@@ -39,8 +39,8 @@ export function CardList({ cards, loading, onNew, onEdit, onTogglePin, onDelete 
           aria-label="Search cards"
           onChange={(e) => setQuery(e.target.value)}
         />
-        <Button variant="primary" onClick={onNew} aria-label="New card">
-          + New
+        <Button variant="primary" onClick={onNew} aria-label="New card" className="shrink-0">
+          New card
         </Button>
       </div>
 
@@ -59,23 +59,27 @@ export function CardList({ cards, loading, onNew, onEdit, onTogglePin, onDelete 
       ) : visible.length === 0 ? (
         <EmptyState title="No matches" hint={`Nothing matches "${query}". Try a different word or tag.`} />
       ) : (
-        <ul className="flex min-h-0 flex-1 flex-col gap-2 overflow-auto pr-0.5">
+        <ul className="flex min-h-0 flex-1 flex-col gap-1.5 overflow-auto pr-0.5">
           {visible.map((card, i) => {
             const isOpen = expanded === card.id;
             return (
               <li
                 key={card.id}
-                className="mn-card mn-rise rounded-xl p-3"
+                className="mn-card mn-rise rounded-xl px-3 py-2.5"
                 style={{ animationDelay: `${Math.min(i, 8) * 28}ms` }}
               >
                 <div className="flex items-start gap-2">
                   <button
-                    className="min-w-0 flex-1 text-left"
+                    className="min-w-0 flex-1 rounded-lg text-left"
                     onClick={() => setExpanded(isOpen ? null : card.id)}
                     aria-expanded={isOpen}
                   >
                     <div className="flex items-center gap-1.5">
-                      {card.pinned && <span aria-label="Pinned" title="Pinned" className="text-accent">★</span>}
+                      {card.pinned && (
+                        <span aria-label="Pinned" title="Pinned" className="text-accent">
+                          ★
+                        </span>
+                      )}
                       <span className="mn-display truncate text-base font-semibold">{card.title}</span>
                     </div>
                     {card.tags.length > 0 && (
@@ -86,7 +90,7 @@ export function CardList({ cards, loading, onNew, onEdit, onTogglePin, onDelete 
                       </div>
                     )}
                   </button>
-                  <div className="flex shrink-0 items-center">
+                  <div className="flex shrink-0 items-center gap-0.5">
                     <IconButton
                       label={card.pinned ? 'Unpin card' : 'Pin card'}
                       active={card.pinned}
@@ -108,7 +112,7 @@ export function CardList({ cards, loading, onNew, onEdit, onTogglePin, onDelete 
                   </div>
                 </div>
                 {isOpen && (
-                  <div className="mt-2 border-t border-border pt-2">
+                  <div className="mt-2.5 border-t border-border pt-2.5">
                     <Markdown>{card.body}</Markdown>
                   </div>
                 )}

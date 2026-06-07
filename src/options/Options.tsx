@@ -80,13 +80,38 @@ export function Options() {
         </span>
         <div>
           <h1 className="mn-display text-2xl font-semibold">Muninn</h1>
-          <p className="text-xs text-muted">Settings · everything is stored locally on this device.</p>
+          <p className="text-xs text-muted">Settings. Everything is stored locally on this device.</p>
         </div>
       </header>
 
-      <div className="flex flex-col gap-6">
-        <Section title="Prompt Upgrade — your API key (optional)">
-          <p className="mb-3 text-xs text-muted">
+      <div className="mn-panel rounded-xl px-6 py-2">
+        <Section title="Features">
+          <p className="mb-2 text-xs leading-relaxed text-muted">
+            Turn any part of Muninn off. Disabled features disappear from the popup and the AI
+            sites; your saved cards are never touched.
+          </p>
+          <FeatureToggle
+            label="On-page launcher"
+            hint="The raven button on AI sites that opens your saved context cards."
+            checked={settings.launcherEnabled}
+            onChange={(v) => void update({ launcherEnabled: v })}
+          />
+          <FeatureToggle
+            label="Capture"
+            hint="The capture buttons inside the launcher that save your selection, the last message, or the full chat to a card."
+            checked={settings.captureEnabled}
+            onChange={(v) => void update({ captureEnabled: v })}
+          />
+          <FeatureToggle
+            label="Prompt upgrade"
+            hint="The Enhance button on AI sites and the Upgrade tab in this popup."
+            checked={settings.upgradeEnabled}
+            onChange={(v) => void update({ upgradeEnabled: v })}
+          />
+        </Section>
+
+        <Section title="Prompt upgrade: your API key (optional)">
+          <p className="mb-4 text-xs leading-relaxed text-muted">
             Local upgrade works offline with no key. To use your own model, choose a provider and
             paste a key.
           </p>
@@ -122,8 +147,8 @@ export function Options() {
                 Save
               </Button>
             </div>
-            <p className="mt-1.5 text-2xs text-muted">
-              🔒 Stored only on this device (chrome.storage.local) and sent only to your chosen
+            <p className="mt-2 text-2xs leading-relaxed text-muted">
+              Stored only on this device (chrome.storage.local) and sent only to your chosen
               provider when you upgrade a prompt. Never synced, never logged.
             </p>
           </Field>
@@ -149,7 +174,7 @@ export function Options() {
         </Section>
 
         <Section title="Context injection">
-          <div className="mb-3 flex items-center justify-between gap-3">
+          <div className="mb-4 flex items-center justify-between gap-4">
             <div>
               <p className="text-sm font-medium">Wrap injected context in a template</p>
               <p className="text-xs text-muted">
@@ -169,21 +194,21 @@ export function Options() {
               disabled={!settings.wrapInjection}
               onChange={(e) => void update({ injectionTemplate: e.target.value })}
             />
-            <div className="mt-1.5 flex items-center justify-between text-2xs text-muted">
+            <div className="mt-2 flex items-center justify-between gap-3 text-2xs text-muted">
               <span>
                 Use <code className="rounded bg-surface-2 px-1">{'{{card.body}}'}</code> where the
                 card content should go.
               </span>
               <button
-                className="text-accent hover:underline"
+                className="shrink-0 text-accent hover:underline"
                 onClick={() => void update({ injectionTemplate: DEFAULT_INJECTION_TEMPLATE })}
               >
                 Reset to default
               </button>
             </div>
             {settings.wrapInjection && !templateHasPlaceholder(settings.injectionTemplate) && (
-              <p className="mt-1 text-2xs text-danger">
-                No {'{{card.body}}'} placeholder found — the card body will be appended after the
+              <p className="mt-1.5 text-2xs leading-relaxed text-danger">
+                No {'{{card.body}}'} placeholder found, so the card body will be appended after the
                 template.
               </p>
             )}
@@ -191,8 +216,8 @@ export function Options() {
         </Section>
 
         <Section title="Your data">
-          <p className="mb-3 text-xs text-muted">
-            Export everything (cards, settings, launcher positions — including your key) to a JSON
+          <p className="mb-4 text-xs leading-relaxed text-muted">
+            Export everything (cards and settings, including your key) to a JSON
             file, or restore from one. Import replaces all current data.
           </p>
           <div className="flex flex-wrap gap-2">
@@ -241,8 +266,8 @@ export function Options() {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="mn-panel rounded-2xl p-5">
-      <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-muted">{title}</h2>
+    <section className="border-t border-border py-6 first:border-t-0">
+      <h2 className="mb-4 text-xs font-semibold uppercase tracking-wide text-muted">{title}</h2>
       {children}
     </section>
   );
@@ -253,6 +278,28 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
     <div className="mb-4 last:mb-0">
       <label className="mb-1.5 block text-xs font-medium text-text">{label}</label>
       {children}
+    </div>
+  );
+}
+
+function FeatureToggle({
+  label,
+  hint,
+  checked,
+  onChange,
+}: {
+  label: string;
+  hint: string;
+  checked: boolean;
+  onChange: (v: boolean) => void;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-4 border-t border-border py-3 first:border-t-0 first:pt-1">
+      <div>
+        <p className="text-sm font-medium">{label}</p>
+        <p className="text-xs text-muted">{hint}</p>
+      </div>
+      <Toggle label={label} checked={checked} onChange={onChange} />
     </div>
   );
 }

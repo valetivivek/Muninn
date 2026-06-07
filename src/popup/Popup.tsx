@@ -20,6 +20,10 @@ export function Popup() {
   const [tab, setTab] = useState<Tab>('memory');
   const [view, setView] = useState<View>({ kind: 'list' });
 
+  const upgradeOn = settings.upgradeEnabled;
+  // If upgrade is turned off, never show its tab; fall back to memory.
+  const activeTab: Tab = tab === 'upgrade' && upgradeOn ? 'upgrade' : 'memory';
+
   function handleCreate(draft: CardDraft) {
     void save(
       addCard(cards, {
@@ -45,32 +49,57 @@ export function Popup() {
 
   return (
     <div className="flex h-[560px] w-[380px] flex-col bg-bg text-text">
-      <header className="flex items-center justify-between border-b border-border px-4 py-3">
+      <header className="flex items-center justify-between px-4 pt-4 pb-3">
         <div className="flex items-center gap-2.5">
           <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-accent/12 text-accent ring-1 ring-accent/20">
             <Raven size={20} />
           </span>
-          <div className="leading-none">
-            <h1 className="mn-display text-xl font-semibold">Muninn</h1>
-            <p className="mt-1 text-2xs text-muted">Memory for your chats</p>
-          </div>
+          <h1 className="mn-display text-xl font-semibold leading-none">Muninn</h1>
         </div>
         <IconButton label="Open settings" onClick={() => chrome.runtime.openOptionsPage()}>
-          ⚙
+          <svg
+            width={17}
+            height={17}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.8}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M4 7h10M18 7h2M4 17h2M10 17h10" />
+            <circle cx="16" cy="7" r="2.3" />
+            <circle cx="8" cy="17" r="2.3" />
+          </svg>
         </IconButton>
       </header>
 
-      <nav className="flex gap-1 border-b border-border px-3 pt-2" role="tablist" aria-label="Sections">
-        <TabButton active={tab === 'memory'} onClick={() => { setTab('memory'); setView({ kind: 'list' }); }}>
-          Memory
-        </TabButton>
-        <TabButton active={tab === 'upgrade'} onClick={() => setTab('upgrade')}>
-          Upgrade
-        </TabButton>
-      </nav>
+      {upgradeOn ? (
+        <nav
+          className="flex gap-5 border-b border-border px-4"
+          role="tablist"
+          aria-label="Sections"
+        >
+          <TabButton
+            active={activeTab === 'memory'}
+            onClick={() => {
+              setTab('memory');
+              setView({ kind: 'list' });
+            }}
+          >
+            Memory
+          </TabButton>
+          <TabButton active={activeTab === 'upgrade'} onClick={() => setTab('upgrade')}>
+            Upgrade
+          </TabButton>
+        </nav>
+      ) : (
+        <div className="border-b border-border" />
+      )}
 
-      <main className="min-h-0 flex-1 overflow-hidden p-4">
-        {tab === 'memory' ? (
+      <main className="min-h-0 flex-1 overflow-y-auto p-4">
+        {activeTab === 'memory' ? (
           view.kind === 'list' ? (
             <CardList
               cards={cards}
@@ -116,8 +145,10 @@ function TabButton({
       role="tab"
       aria-selected={active}
       onClick={onClick}
-      className={`rounded-t-lg px-3 py-1.5 text-sm font-medium transition ${
-        active ? 'border-b-2 border-accent text-text' : 'text-muted hover:text-text'
+      className={`-mb-px border-b-2 py-2.5 text-sm font-medium transition-colors ${
+        active
+          ? 'border-accent text-text'
+          : 'border-transparent text-muted hover:text-text'
       }`}
     >
       {children}

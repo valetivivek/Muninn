@@ -111,13 +111,15 @@ export function Toggle({ label, checked, onChange }: ToggleProps) {
       aria-checked={checked}
       aria-label={label}
       onClick={() => onChange(!checked)}
-      className={`relative h-6 w-10 shrink-0 rounded-full transition ${
-        checked ? 'bg-accent' : 'bg-border'
+      className={`relative h-6 w-10 shrink-0 rounded-full transition-colors duration-150 ${
+        checked ? 'bg-accent' : 'bg-surface-2 ring-1 ring-inset ring-border'
       }`}
     >
+      {/* Thumb fill flips with state so it always clears 3:1 against the track:
+          accent-ink on the accent fill (on), text on surface-2 (off). */}
       <span
-        className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition ${
-          checked ? 'left-[1.125rem]' : 'left-0.5'
+        className={`absolute top-0.5 h-5 w-5 rounded-full shadow-sm transition-[left] duration-150 ${
+          checked ? 'left-[1.125rem] bg-accent-ink' : 'left-0.5 bg-text'
         }`}
       />
     </button>
@@ -125,8 +127,10 @@ export function Toggle({ label, checked, onChange }: ToggleProps) {
 }
 
 export function Tag({ children }: { children: ReactNode }) {
+  // Metadata, not action: a quiet neutral chip keeps the ember reserved for
+  // primary action and selection (and clears 4.5:1 in every palette).
   return (
-    <span className="inline-flex items-center rounded-md bg-accent/15 px-1.5 py-0.5 text-2xs font-medium text-accent">
+    <span className="inline-flex items-center rounded-md bg-surface-2 px-1.5 py-0.5 text-2xs font-medium text-muted">
       {children}
     </span>
   );
@@ -142,9 +146,9 @@ interface EmptyStateProps {
 export function EmptyState({ icon, title, hint }: EmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center gap-2 px-6 py-10 text-center">
-      {icon && <div className="text-accent/80">{icon}</div>}
+      {icon && <div className="mb-1 text-accent">{icon}</div>}
       <p className="text-sm font-medium text-text">{title}</p>
-      <p className="max-w-[16rem] text-xs text-muted">{hint}</p>
+      <p className="max-w-[16rem] text-xs leading-relaxed text-muted">{hint}</p>
     </div>
   );
 }
