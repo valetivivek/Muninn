@@ -20,6 +20,8 @@ export interface SiteAdapter {
   findSendButton(): HTMLElement | null;
   /** Text of the most recent message, for capture when nothing is selected. */
   lastMessageText(): string;
+  /** Full visible conversation as plain text, or '' when not reliably capturable. */
+  conversationText(): string;
 }
 
 /** Helper: set a textarea's value via the native setter so React/Vue notice. */

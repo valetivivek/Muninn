@@ -77,5 +77,13 @@ export function safeAdapter(adapter: SiteAdapter): SiteAdapter {
         return '';
       }
     },
+    conversationText() {
+      try {
+        return adapter.conversationText();
+      } catch (e) {
+        warnOnce('conversationText', e);
+        return '';
+      }
+    },
   };
 }

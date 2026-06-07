@@ -50,6 +50,8 @@ export interface UpgradeArgs {
   /** Called with the accumulated text as it streams in. */
   onChunk?: (fullText: string) => void;
   signal?: AbortSignal;
+  /** Force streaming on/off. Defaults to the provider's capability. */
+  stream?: boolean;
 }
 
 /** A safe error that never embeds the API key. */
@@ -74,7 +76,7 @@ export async function runByokUpgrade(args: UpgradeArgs): Promise<string> {
     );
   }
 
-  const stream = provider.supportsStreaming;
+  const stream = (args.stream ?? provider.supportsStreaming) && provider.supportsStreaming;
   const req = provider.buildRequest({
     apiKey: settings.apiKey,
     model: settings.model || provider.defaultModel,

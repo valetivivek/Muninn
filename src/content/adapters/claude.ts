@@ -46,4 +46,26 @@ export const claudeAdapter: SiteAdapter = {
     }
     return '';
   },
+
+  conversationText() {
+    const USER_SEL = '[data-testid="user-message"]';
+    const ASSISTANT_SEL = '.font-claude-message, .font-claude-response';
+    // Pull both roles in one query so turns stay in document order; classify
+    // each node afterwards. Fall back to any *message* node (roles unknown).
+    let nodes = document.querySelectorAll<HTMLElement>(`${USER_SEL}, ${ASSISTANT_SEL}`);
+    if (!nodes.length) nodes = document.querySelectorAll<HTMLElement>('[data-testid*="message"]');
+
+    const parts: string[] = [];
+    nodes.forEach((node) => {
+      const text = (node.innerText ?? node.textContent ?? '').trim();
+      if (!text) return;
+      const label = node.matches(USER_SEL)
+        ? 'You:'
+        : node.matches(ASSISTANT_SEL)
+          ? 'Claude:'
+          : '';
+      parts.push(label ? `${label}\n${text}` : text);
+    });
+    return parts.join('\n\n');
+  },
 };

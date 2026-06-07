@@ -1,6 +1,7 @@
-import { describe, it, expect } from 'vitest';
-import { buildSystemInstruction } from './byok';
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import { buildSystemInstruction, runByokUpgrade } from './byok';
 import { PROVIDERS } from './providers';
+import { DEFAULT_SETTINGS } from '../types';
 
 describe('buildSystemInstruction', () => {
   it('embeds the tone and aggressiveness and the fixed framing', () => {
@@ -61,5 +62,36 @@ describe('provider configs', () => {
     expect(
       PROVIDERS.openai.parseFull({ choices: [{ message: { content: 'done' } }] }),
     ).toBe('done');
+  });
+});
+
+describe('runByokUpgrade', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('honors stream:false and returns the parsed full response text', async () => {
+    // The host permission is granted by the Options page on Save, so the
+    // background can fetch directly. Simulate that here.
+    // @ts-expect-error minimal permissions mock for the test
+    chrome.permissions = {
+      contains: vi.fn().mockResolvedValue(true),
+      request: vi.fn().mockResolvedValue(true),
+    };
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ content: [{ type: 'text', text: 'refined prompt' }] }),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const text = await runByokUpgrade({
+      input: 'rough',
+      tone: 'auto',
+      aggressiveness: 'balanced',
+      settings: { ...DEFAULT_SETTINGS, provider: 'anthropic', apiKey: 'sk-test' },
+      stream: false,
+    });
+
+    expect(text).toBe('refined prompt');
+    const sentBody = JSON.parse(fetchMock.mock.calls[0][1].body);
+    expect(sentBody.stream).toBe(false);
   });
 });

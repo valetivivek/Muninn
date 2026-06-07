@@ -6,8 +6,6 @@ import {
   setCards,
   getSettings,
   updateSettings,
-  setLauncherPos,
-  getLauncherPos,
   exportAll,
   importAll,
   wipeAll,
@@ -36,10 +34,11 @@ describe('storage defaults', () => {
     expect(s.wrapInjection).toBe(true); // default preserved
   });
 
-  it('stores launcher position per host', async () => {
-    await setLauncherPos('claude.ai', { x: 10, y: 20 });
-    expect(await getLauncherPos('claude.ai')).toEqual({ x: 10, y: 20 });
-    expect(await getLauncherPos('chatgpt.com')).toBeUndefined();
+  it('defaults every feature toggle to enabled', async () => {
+    const s = await getSettings();
+    expect(s.launcherEnabled).toBe(true);
+    expect(s.captureEnabled).toBe(true);
+    expect(s.upgradeEnabled).toBe(true);
   });
 });
 

@@ -52,4 +52,23 @@ export const chatgptAdapter: SiteAdapter = {
     }
     return '';
   },
+
+  conversationText() {
+    // Layered fallbacks: the role-attribute build is preferred because its
+    // attribute value (user/assistant) gives us cheap, reliable role labels.
+    let nodes = document.querySelectorAll<HTMLElement>('[data-message-author-role]');
+    if (!nodes.length)
+      nodes = document.querySelectorAll<HTMLElement>('article [data-testid="conversation-turn"]');
+    if (!nodes.length) nodes = document.querySelectorAll<HTMLElement>('main .markdown.prose');
+
+    const parts: string[] = [];
+    nodes.forEach((node) => {
+      const text = (node.innerText ?? node.textContent ?? '').trim();
+      if (!text) return;
+      const role = node.getAttribute('data-message-author-role');
+      const label = role === 'user' ? 'You:' : role === 'assistant' ? 'ChatGPT:' : '';
+      parts.push(label ? `${label}\n${text}` : text);
+    });
+    return parts.join('\n\n');
+  },
 };

@@ -30,6 +30,13 @@ export interface Settings {
   wrapInjection: boolean;
   /** Editable injection template. Must contain the {{card.body}} placeholder. */
   injectionTemplate: string;
+  /**
+   * Feature toggles. Each major feature can be turned off independently and all
+   * default on; disabling one hides that feature's UI wherever it appears.
+   */
+  launcherEnabled: boolean; // the on-page raven launcher (cards on AI sites)
+  captureEnabled: boolean; // the Capture button inside the launcher
+  upgradeEnabled: boolean; // Prompt Upgrade (popup tab + on-page Enhance button)
 }
 
 /** The shape of everything Muninn persists in chrome.storage.local. */
@@ -51,4 +58,7 @@ export const DEFAULT_SETTINGS: Settings = {
   defaultAggressiveness: 'balanced',
   wrapInjection: true,
   injectionTemplate: DEFAULT_INJECTION_TEMPLATE,
+  launcherEnabled: true,
+  captureEnabled: true,
+  upgradeEnabled: true,
 };

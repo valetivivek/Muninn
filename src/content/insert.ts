@@ -13,3 +13,14 @@ export function insertText(adapter: SiteAdapter, text: string): InsertResult {
   adapter.setText(input, appendToText(existing, text));
   return { ok: true };
 }
+
+/**
+ * Replace the site's input with `text`. Used by Enhance, which rewrites the
+ * prompt the user already typed (so it overwrites rather than appends).
+ */
+export function replaceText(adapter: SiteAdapter, text: string): InsertResult {
+  const input = adapter.findInput();
+  if (!input) return { ok: false, reason: 'Could not find the chat input on this page.' };
+  adapter.setText(input, text);
+  return { ok: true };
+}

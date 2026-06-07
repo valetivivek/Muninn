@@ -7,7 +7,6 @@ import {
   type StorageRoot,
   type Card,
   type Settings,
-  type LauncherPosition,
   DEFAULT_SETTINGS,
 } from './types';
 
@@ -17,7 +16,6 @@ const KEYS = {
   schemaVersion: 'muninn.schemaVersion',
   cards: 'muninn.cards',
   settings: 'muninn.settings',
-  launcherPos: 'muninn.launcherPos',
 } as const;
 
 type StorageKey = (typeof KEYS)[keyof typeof KEYS];
@@ -26,7 +24,6 @@ const DEFAULTS: StorageRoot = {
   'muninn.schemaVersion': SCHEMA_VERSION,
   'muninn.cards': [],
   'muninn.settings': DEFAULT_SETTINGS,
-  'muninn.launcherPos': {},
 };
 
 /**
@@ -110,9 +107,6 @@ export async function loadRoot(): Promise<StorageRoot> {
       ...DEFAULT_SETTINGS,
       ...((items[KEYS.settings] as Partial<Settings>) ?? {}),
     },
-    'muninn.launcherPos':
-      (items[KEYS.launcherPos] as Record<string, LauncherPosition>) ??
-      DEFAULTS['muninn.launcherPos'],
   };
 }
 
@@ -144,21 +138,6 @@ export async function updateSettings(patch: Partial<Settings>): Promise<Settings
   return next;
 }
 
-// ---- Launcher position (per hostname) -------------------------------------
-
-export async function getLauncherPos(host: string): Promise<LauncherPosition | undefined> {
-  const items = await rawGet([KEYS.launcherPos]);
-  const map = (items[KEYS.launcherPos] as Record<string, LauncherPosition>) ?? {};
-  return map[host];
-}
-
-export async function setLauncherPos(host: string, pos: LauncherPosition): Promise<void> {
-  const items = await rawGet([KEYS.launcherPos]);
-  const map = (items[KEYS.launcherPos] as Record<string, LauncherPosition>) ?? {};
-  map[host] = pos;
-  await rawSet({ 'muninn.launcherPos': map });
-}
-
 // ---- Export / import / wipe ----------------------------------------------
 
 /** Full export of every Muninn key (used by the options page). */
@@ -176,10 +155,6 @@ export async function importAll(data: Partial<StorageRoot>): Promise<void> {
     'muninn.schemaVersion': SCHEMA_VERSION,
     'muninn.cards': Array.isArray(data['muninn.cards']) ? data['muninn.cards']! : [],
     'muninn.settings': { ...DEFAULT_SETTINGS, ...(data['muninn.settings'] ?? {}) },
-    'muninn.launcherPos':
-      typeof data['muninn.launcherPos'] === 'object' && data['muninn.launcherPos']
-        ? data['muninn.launcherPos']!
-        : {},
   };
   await chrome.storage.local.clear();
   await rawSet(root);
