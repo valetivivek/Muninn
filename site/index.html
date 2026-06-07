@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Muninn — Memory for your AI chats</title>
+<meta name="description" content="Muninn is a private, client-side Chrome extension that saves reusable context as cards and sharpens rough prompts on Claude, ChatGPT, and Gemini. No backend, no analytics." />
+<style>
+  :root{
+    --bg:#101113; --surface:#1a1c1f; --card:#212428; --card-2:#2a2e34;
+    --border:#2d3137; --border-soft:#23262b;
+    --text:#e8eaed; --muted:#9aa1aa; --faint:#6b7178;
+    --accent:#3b82f6; --accent-ink:#ffffff; --accent-soft:#1e3a8a;
+    --r:10px;
+    --font:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+    --mono:ui-monospace,'SF Mono','JetBrains Mono','Cascadia Code',Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font);
+    line-height:1.6;-webkit-font-smoothing:antialiased;}
+  a{color:inherit;text-decoration:none;}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 24px;}
+  .accent{color:var(--accent);}
+
+  /* nav */
+  header.nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(10px);
+    background:color-mix(in srgb,var(--bg) 82%,transparent);
+    border-bottom:1px solid var(--border-soft);}
+  .nav-in{display:flex;align-items:center;height:64px;gap:20px;}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:650;font-size:17px;letter-spacing:-0.01em;}
+  .brand .mark{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;
+    background:var(--surface);border:1px solid var(--border);color:var(--accent);}
+  .brand .mark svg{width:18px;height:18px;}
+  .nav-links{margin-left:auto;display:flex;align-items:center;gap:26px;}
+  .nav-links a{color:var(--muted);font-size:14px;font-weight:500;transition:color .15s;}
+  .nav-links a:hover{color:var(--text);}
+  .btn{display:inline-flex;align-items:center;gap:8px;font:inherit;font-size:14px;font-weight:600;
+    padding:9px 16px;border-radius:8px;border:1px solid transparent;cursor:pointer;transition:transform .12s,background .15s,border-color .15s;}
+  .btn:active{transform:translateY(1px) scale(.99);}
+  .btn-primary{background:var(--accent);color:var(--accent-ink);}
+  .btn-primary:hover{background:#2f74e8;}
+  .btn-ghost{border-color:var(--border);color:var(--text);}
+  .btn-ghost:hover{background:var(--surface);}
+  .btn svg{width:16px;height:16px;}
+
+  /* hero */
+  .hero{padding:96px 0 72px;display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center;}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;
+    color:var(--muted);background:var(--surface);border:1px solid var(--border);
+    padding:5px 11px;border-radius:999px;margin-bottom:22px;}
+  .eyebrow .dot{width:6px;height:6px;border-radius:999px;background:var(--accent);}
+  h1{font-size:clamp(34px,5vw,54px);line-height:1.05;letter-spacing:-0.03em;margin:0 0 18px;font-weight:680;}
+  .lead{font-size:18px;color:var(--muted);max-width:34ch;margin:0 0 30px;}
+  .cta-row{display:flex;gap:12px;flex-wrap:wrap;}
+  .trust{margin-top:26px;font-size:13px;color:var(--faint);}
+  .trust b{color:var(--muted);font-weight:600;}
+
+  /* product mock (the real popup UI) */
+  .mock{background:var(--surface);border:1px solid var(--border);border-radius:16px;
+    box-shadow:0 24px 70px rgb(0 0 0 /.5);overflow:hidden;width:330px;margin-left:auto;}
+  .mock .hd{display:flex;align-items:center;gap:10px;padding:13px 15px;}
+  .mock .hd .m{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;background:var(--card);border:1px solid var(--border);color:var(--accent);}
+  .mock .hd .m svg{width:17px;height:17px;}
+  .mock .hd .t{font-weight:650;font-size:15px;}
+  .mock .hd .s{font-size:11px;color:var(--muted);margin-top:1px;}
+  .mock .hd .gear{margin-left:auto;color:var(--faint);}
+  .mock .hd .gear svg{width:16px;height:16px;display:block;}
+  .seg{display:grid;grid-template-columns:1fr 1fr;gap:3px;margin:0 15px;padding:3px;background:var(--card);border:1px solid var(--border);border-radius:8px;}
+  .seg span{text-align:center;font-size:12px;font-weight:550;padding:6px 0;border-radius:6px;color:var(--muted);}
+  .seg span.on{background:var(--surface);color:var(--text);box-shadow:0 1px 2px rgb(0 0 0 /.25);}
+  .mock .tb{display:flex;gap:8px;padding:13px 15px 10px;}
+  .mock .tb .inp{flex:1;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 11px;font-size:12.5px;color:var(--muted);}
+  .mock .tb .add{background:var(--accent);color:#fff;border-radius:8px;padding:8px 12px;font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:5px;}
+  .mock .tb .add svg{width:14px;height:14px;}
+  .mock .list{padding:0 15px 16px;display:grid;gap:8px;}
+  .mc{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 12px;}
+  .mc .ct{font-size:13px;font-weight:600;}
+  .mc .cs{font-size:11.5px;color:var(--muted);margin-top:2px;}
+  .mc .tags{display:flex;gap:5px;margin-top:8px;}
+  .mc .tag{font-size:10px;padding:2px 7px;border-radius:999px;background:var(--card-2);color:var(--muted);border:1px solid var(--border);}
+
+  /* sections */
+  section{padding:64px 0;border-top:1px solid var(--border-soft);}
+  .sec-head{max-width:60ch;margin-bottom:40px;}
+  h2{font-size:clamp(26px,3.4vw,36px);line-height:1.1;letter-spacing:-0.02em;margin:0 0 14px;font-weight:660;}
+  .sec-head p{color:var(--muted);font-size:16px;margin:0;}
+
+  .feature{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;}
+  .feature.rev .col-text{order:2;}
+  .feature h3{font-size:22px;letter-spacing:-0.01em;margin:0 0 12px;font-weight:640;}
+  .feature p{color:var(--muted);margin:0 0 18px;font-size:15.5px;}
+  .ticks{list-style:none;padding:0;margin:0;display:grid;gap:11px;}
+  .ticks li{display:flex;gap:11px;font-size:14.5px;color:var(--text);align-items:flex-start;}
+  .ticks li svg{width:18px;height:18px;color:var(--accent);flex-shrink:0;margin-top:1px;}
+  .ticks li span{color:var(--muted);}
+
+  .panelcard{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;}
+  .src{display:flex;gap:10px;align-items:center;padding:13px 14px;border:1px solid var(--border);border-radius:10px;background:var(--card);margin-bottom:10px;}
+  .src:last-child{margin-bottom:0;}
+  .src .ic{width:34px;height:34px;border-radius:8px;background:var(--surface);border:1px solid var(--border);display:grid;place-items:center;color:var(--accent);flex-shrink:0;}
+  .src .ic svg{width:18px;height:18px;}
+  .src .tt{font-size:14px;font-weight:600;}
+  .src .dd{font-size:12.5px;color:var(--muted);}
+
+  .modes{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .mode{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;}
+  .mode .lbl{display:inline-flex;align-items:center;gap:7px;font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--accent);margin-bottom:10px;}
+  .mode h4{margin:0 0 8px;font-size:17px;font-weight:640;}
+  .mode p{margin:0;color:var(--muted);font-size:14px;}
+  .mode .off{font-size:12px;color:var(--faint);margin-top:12px;font-family:var(--mono);}
+
+  .sites{display:flex;gap:12px;flex-wrap:wrap;}
+  .site{display:flex;align-items:center;gap:9px;background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:9px 16px;font-size:14px;font-weight:550;}
+  .site .pip{width:8px;height:8px;border-radius:999px;}
+
+  /* privacy band */
+  .privacy{background:linear-gradient(180deg,var(--surface),var(--bg));}
+  .pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:8px;}
+  .pcard{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;}
+  .pcard .ic{width:36px;height:36px;border-radius:9px;background:var(--surface);border:1px solid var(--border);display:grid;place-items:center;color:var(--accent);margin-bottom:14px;}
+  .pcard .ic svg{width:19px;height:19px;}
+  .pcard h4{margin:0 0 7px;font-size:16px;font-weight:630;}
+  .pcard p{margin:0;color:var(--muted);font-size:13.5px;}
+
+  /* final cta */
+  .final{text-align:center;}
+  .final h2{margin-bottom:16px;}
+  .final p{color:var(--muted);max-width:46ch;margin:0 auto 28px;font-size:16px;}
+
+  footer{border-top:1px solid var(--border-soft);padding:34px 0;color:var(--faint);font-size:13.5px;}
+  .foot-in{display:flex;align-items:center;gap:18px;flex-wrap:wrap;}
+  .foot-in .brand{font-size:15px;}
+  .foot-links{margin-left:auto;display:flex;gap:22px;}
+  .foot-links a{color:var(--muted);}
+  .foot-links a:hover{color:var(--text);}
+
+  .reveal{opacity:0;transform:translateY(14px);transition:opacity .6s cubic-bezier(.16,1,.3,1),transform .6s cubic-bezier(.16,1,.3,1);}
+  .reveal.in{opacity:1;transform:none;}
+
+  @media (max-width:860px){
+    .hero{grid-template-columns:1fr;gap:40px;padding:64px 0 48px;}
+    .mock{margin:0 auto;}
+    .feature{grid-template-columns:1fr;gap:28px;}
+    .feature.rev .col-text{order:0;}
+    .modes,.pgrid{grid-template-columns:1fr;}
+    .nav-links a:not(.btn){display:none;}
+  }
+  @media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none;}html{scroll-behavior:auto;}}
+</style>
+</head>
+<body>
+  <!-- shared raven + icon defs are inlined per-use to keep this a single file -->
+
+  <header class="nav">
+    <div class="wrap nav-in">
+      <a class="brand" href="#top">
+        <span class="mark">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11c0-3.3 2.7-6 6-6 2 0 3.4.9 4.4 2.2L21 6l-3 3.2c.4 1 .6 2 .6 3.1 0 .9-.2 1.8-.5 2.6"/><path d="M3 11c.7 4 4 7 8.5 7 2.2 0 4-.6 5.6-1.6"/><circle cx="8.5" cy="9.5" r="1" fill="currentColor" stroke="none"/></svg>
+        </span>
+        Muninn
+      </a>
+      <nav class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#sites">Where it works</a>
+        <a href="#privacy">Privacy</a>
+        <a class="btn btn-ghost" href="privacy.html">Privacy policy</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <div class="wrap">
+      <!-- HERO -->
+      <section class="hero" style="border-top:0;">
+        <div class="col-text">
+          <span class="eyebrow"><span class="dot"></span> Client-side Chrome extension</span>
+          <h1>Memory for your <span class="accent">AI chats</span>.</h1>
+          <p class="lead">Save reusable context as cards and drop it into any chat with one click. Turn rough prompts into sharp ones. Nothing leaves your device.</p>
+          <div class="cta-row">
+            <a class="btn btn-primary" href="#features">See what it does
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </a>
+            <a class="btn btn-ghost" href="privacy.html">Read the privacy policy</a>
+          </div>
+          <p class="trust">Runs on <b>Claude</b>, <b>ChatGPT</b>, and <b>Gemini</b>. No backend, no analytics, no tracking.</p>
+        </div>
+
+        <div class="col-mock">
+          <div class="mock" role="img" aria-label="The Muninn popup showing saved context cards">
+            <div class="hd">
+              <span class="m"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11c0-3.3 2.7-6 6-6 2 0 3.4.9 4.4 2.2L21 6l-3 3.2c.4 1 .6 2 .6 3.1 0 .9-.2 1.8-.5 2.6"/><path d="M3 11c.7 4 4 7 8.5 7 2.2 0 4-.6 5.6-1.6"/><circle cx="8.5" cy="9.5" r="1" fill="currentColor" stroke="none"/></svg></span>
+              <div><div class="t">Muninn</div><div class="s">Memory for your chats</div></div>
+              <span class="gear"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2.3"/><circle cx="8" cy="17" r="2.3"/></svg></span>
+            </div>
+            <div class="seg"><span class="on">Memory</span><span>Upgrade</span></div>
+            <div class="tb">
+              <span class="inp">Search cards by title or tag…</span>
+              <span class="add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>New</span>
+            </div>
+            <div class="list">
+              <div class="mc"><div class="ct">Brand voice guidelines</div><div class="cs">Plain, specific language. Active voice, short sentences.</div><div class="tags"><span class="tag">writing</span><span class="tag">style</span></div></div>
+              <div class="mc"><div class="ct">API review checklist</div><div class="cs">Auth, rate limits, error shapes, pagination.</div><div class="tags"><span class="tag">eng</span></div></div>
+              <div class="mc"><div class="ct">Trip planning context</div><div class="cs">Budget, dates, dietary notes, must-sees.</div><div class="tags"><span class="tag">personal</span></div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- FEATURES -->
+    <section id="features">
+      <div class="wrap">
+        <div class="sec-head reveal">
+          <h2>Two things, done well.</h2>
+          <p>Muninn keeps a small, sharp scope: a place to keep reusable context, and a way to tighten the prompt you are about to send.</p>
+        </div>
+
+        <div class="feature reveal" style="margin-bottom:56px;">
+          <div class="col-text">
+            <h3>Context cards you can reuse</h3>
+            <p>Write a block of context once, then inject it into any chat input with a click. It appends to what you have typed, never overwrites it.</p>
+            <ul class="ticks">
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span>Create, edit, pin, and fuzzy-search by title or tag.</span></li>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span>Markdown bodies with a live preview. Pinned cards sort first.</span></li>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span>An optional template wraps the context so the model reads it first.</span></li>
+            </ul>
+          </div>
+          <div class="col-visual">
+            <div class="panelcard">
+              <div class="mc" style="margin-bottom:10px;"><div class="ct">★ Coding style</div><div class="cs">Prefer TypeScript. Small functions. Tests before fixes.</div><div class="tags"><span class="tag">eng</span><span class="tag">defaults</span></div></div>
+              <div class="mc" style="margin-bottom:10px;"><div class="ct">Resume context</div><div class="cs">Roles, dates, and the tone to keep when rewriting.</div><div class="tags"><span class="tag">personal</span></div></div>
+              <div class="mc"><div class="ct">Support reply voice</div><div class="cs">Warm, direct, no filler. Always offer a next step.</div><div class="tags"><span class="tag">work</span></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="feature rev reveal">
+          <div class="col-text">
+            <h3>Capture, only when you ask</h3>
+            <p>Save context into a card from one of three sources, with a preview before anything is stored. Muninn never auto-captures or logs your conversations.</p>
+          </div>
+          <div class="col-visual">
+            <div class="src"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V5a1 1 0 0 1 1-1h2M17 4h2a1 1 0 0 1 1 1v2M20 17v2a1 1 0 0 1-1 1h-2M7 20H5a1 1 0 0 1-1-1v-2"/><path d="M8 12h8"/></svg></span><div><div class="tt">Your selection</div><div class="dd">Highlight text on the page, then save it.</div></div></div>
+            <div class="src"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4L4 21l1.1-3.7A8.4 8.4 0 1 1 21 11.5z"/></svg></span><div><div class="tt">The last message</div><div class="dd">Grab just the latest reply in the thread.</div></div></div>
+            <div class="src"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg></span><div><div class="tt">The full chat</div><div class="dd">Capture the whole visible conversation at once.</div></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROMPT UPGRADE -->
+    <section>
+      <div class="wrap">
+        <div class="sec-head reveal">
+          <h2>Sharpen a prompt before you send it.</h2>
+          <p>Pick a tone (Auto, Business, Creative, Technical) and a revision strength (Conservative, Balanced, Radical). Run it from the popup, or from the dock right on the page.</p>
+        </div>
+        <div class="modes reveal">
+          <div class="mode">
+            <span class="lbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg> Local</span>
+            <h4>Offline rules, zero network</h4>
+            <p>A deterministic pipeline adds a persona, requests an output format, and expands terse prompts. It cannot make a network call.</p>
+            <div class="off">no key required</div>
+          </div>
+          <div class="mode">
+            <span class="lbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.5 6.5L21 9l-5 4 1.5 7L12 16l-5.5 4L8 13 3 9l6.5-.5z"/></svg> Bring your own key</span>
+            <h4>Your provider, your key</h4>
+            <p>Calls Anthropic or OpenAI with your own key. On-page requests route through the background worker, so your key never enters the web page.</p>
+            <div class="off">key stays on device</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SITES -->
+    <section id="sites">
+      <div class="wrap">
+        <div class="feature reveal">
+          <div class="col-text">
+            <h3>It shows up where you already work</h3>
+            <p>A small pair of buttons sits just above the chat composer: the raven opens your cards, the second opens prompt upgrade. If a site changes its layout, the dock hides itself quietly instead of breaking the page.</p>
+            <ul class="ticks">
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span>One consistent look across every supported site.</span></li>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span>Turn the dock, capture, or prompt upgrade off at any time.</span></li>
+            </ul>
+          </div>
+          <div class="col-visual">
+            <div class="sites">
+              <span class="site"><span class="pip" style="background:#d97757"></span>Claude</span>
+              <span class="site"><span class="pip" style="background:#10a37f"></span>ChatGPT</span>
+              <span class="site"><span class="pip" style="background:#4285f4"></span>Gemini</span>
+            </div>
+            <p style="color:var(--faint);font-size:13px;margin-top:16px;">Runs only on claude.ai, chatgpt.com, chat.openai.com, and gemini.google.com. No broad page access.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRIVACY -->
+    <section id="privacy" class="privacy">
+      <div class="wrap">
+        <div class="sec-head reveal">
+          <h2>Private by design, not by promise.</h2>
+          <p>Muninn is fully client-side. There is nothing to log in to and nowhere for your data to go.</p>
+        </div>
+        <div class="pgrid reveal">
+          <div class="pcard">
+            <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.4-3 7.6-7 9-4-1.4-7-4.6-7-9V6z"/><path d="M9.5 12l1.8 1.8L15 10"/></svg></span>
+            <h4>Stays on your device</h4>
+            <p>Cards and settings live in your browser's local storage. Nothing syncs to your Google account or any server.</p>
+          </div>
+          <div class="pcard">
+            <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg></span>
+            <h4>No analytics, ever</h4>
+            <p>No telemetry, no usage counting, no token meter, no remote configuration. The code makes no background calls.</p>
+          </div>
+          <div class="pcard">
+            <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span>
+            <h4>Your key, your control</h4>
+            <p>A BYOK key is stored locally, masked in the UI, scrubbed from errors, and sent only to the provider you chose.</p>
+          </div>
+        </div>
+        <p style="margin-top:24px;"><a class="btn btn-ghost" href="privacy.html">Read the full privacy policy
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></p>
+      </div>
+    </section>
+
+    <!-- FINAL -->
+    <section class="final">
+      <div class="wrap reveal">
+        <h2>Keep your context. Sharpen your prompts.</h2>
+        <p>Muninn does two small things and gets out of the way. Load it as an unpacked extension and try it on your next chat.</p>
+        <a class="btn btn-primary" href="https://github.com" target="_blank" rel="noopener">View the source
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M9 7h8v8"/></svg></a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap foot-in">
+      <span class="brand"><span class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11c0-3.3 2.7-6 6-6 2 0 3.4.9 4.4 2.2L21 6l-3 3.2c.4 1 .6 2 .6 3.1 0 .9-.2 1.8-.5 2.6"/><path d="M3 11c.7 4 4 7 8.5 7 2.2 0 4-.6 5.6-1.6"/><circle cx="8.5" cy="9.5" r="1" fill="currentColor" stroke="none"/></svg></span>Muninn</span>
+      <span style="color:var(--faint);">Client-side. Open source. Named after Odin's raven of memory.</span>
+      <span class="foot-links">
+        <a href="#features">Features</a>
+        <a href="privacy.html">Privacy</a>
+      </span>
+    </div>
+  </footer>
+
+  <script>
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { threshold: 0.15 });
+    document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+  </script>
+</body>
+</html>

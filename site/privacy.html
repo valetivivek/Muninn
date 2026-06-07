@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Muninn — Privacy Policy</title>
+<meta name="description" content="Muninn's privacy policy. A fully client-side Chrome extension with no servers, no analytics, and no telemetry." />
+<style>
+  :root{
+    --bg:#101113; --surface:#1a1c1f; --card:#212428;
+    --border:#2d3137; --border-soft:#23262b;
+    --text:#e8eaed; --muted:#9aa1aa; --faint:#6b7178; --accent:#3b82f6;
+    --font:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+    --mono:ui-monospace,'SF Mono','JetBrains Mono',Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font);line-height:1.65;-webkit-font-smoothing:antialiased;}
+  a{color:var(--accent);text-decoration:none;}
+  a:hover{text-decoration:underline;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 24px;}
+
+  header.nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(10px);
+    background:color-mix(in srgb,var(--bg) 82%,transparent);border-bottom:1px solid var(--border-soft);}
+  .nav-in{display:flex;align-items:center;height:64px;max-width:1120px;margin:0 auto;padding:0 24px;}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:650;font-size:17px;letter-spacing:-0.01em;color:var(--text);}
+  .brand .mark{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:var(--surface);border:1px solid var(--border);color:var(--accent);}
+  .brand .mark svg{width:18px;height:18px;}
+  .back{margin-left:auto;font-size:14px;color:var(--muted);font-weight:500;}
+  .back:hover{color:var(--text);text-decoration:none;}
+
+  main{padding:56px 0 80px;}
+  h1{font-size:38px;letter-spacing:-0.025em;margin:0 0 6px;font-weight:680;}
+  .updated{color:var(--faint);font-size:13.5px;margin:0 0 36px;font-family:var(--mono);}
+  .intro{font-size:17px;color:var(--muted);margin:0 0 8px;}
+  h2{font-size:21px;letter-spacing:-0.01em;margin:42px 0 12px;font-weight:640;}
+  h3{font-size:16px;margin:24px 0 8px;font-weight:620;}
+  p{color:var(--muted);margin:0 0 14px;}
+  strong{color:var(--text);font-weight:620;}
+  ul{margin:0 0 14px;padding-left:22px;color:var(--muted);}
+  li{margin:7px 0;}
+
+  .callout{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin:8px 0 18px;}
+  .callout ul{margin:0;}
+  .callout li{color:var(--text);}
+  .callout li span{color:var(--muted);}
+
+  table{width:100%;border-collapse:collapse;margin:6px 0 20px;font-size:14px;}
+  th,td{text-align:left;padding:11px 13px;border:1px solid var(--border);vertical-align:top;}
+  th{background:var(--surface);color:var(--text);font-weight:600;font-size:13px;}
+  td{color:var(--muted);}
+  td code,p code{font-family:var(--mono);font-size:12.5px;background:var(--card);border:1px solid var(--border);border-radius:5px;padding:1px 6px;color:var(--text);}
+
+  footer{border-top:1px solid var(--border-soft);padding:30px 0;color:var(--faint);font-size:13.5px;}
+  .foot-in{max-width:1120px;margin:0 auto;padding:0 24px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;}
+  .foot-in a{color:var(--muted);}
+  @media (max-width:600px){h1{font-size:30px;}}
+</style>
+</head>
+<body>
+  <header class="nav">
+    <div class="nav-in">
+      <a class="brand" href="index.html">
+        <span class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11c0-3.3 2.7-6 6-6 2 0 3.4.9 4.4 2.2L21 6l-3 3.2c.4 1 .6 2 .6 3.1 0 .9-.2 1.8-.5 2.6"/><path d="M3 11c.7 4 4 7 8.5 7 2.2 0 4-.6 5.6-1.6"/><circle cx="8.5" cy="9.5" r="1" fill="currentColor" stroke="none"/></svg></span>
+        Muninn
+      </a>
+      <a class="back" href="index.html">Back to home</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap">
+      <h1>Privacy Policy</h1>
+      <p class="updated">Last updated: 2026-06-07</p>
+
+      <p class="intro">Muninn is built to be private by default. It is a fully client-side extension. This page describes exactly what is stored, where, and what leaves your device.</p>
+
+      <h2>The short version</h2>
+      <div class="callout">
+        <ul>
+          <li><span>Everything you create stays on your device, in the browser's local storage.</span></li>
+          <li><span>Muninn has no servers, no analytics, no telemetry, and no remote configuration.</span></li>
+          <li><span>The only network requests Muninn makes are the prompt-upgrade calls you explicitly trigger in bring-your-own-key mode, sent directly to the provider you chose with your own key.</span></li>
+          <li><span>There is no usage or token counter, and no automatic capture or logging of your conversations. Capture happens only when you click a capture action.</span></li>
+        </ul>
+      </div>
+
+      <h2>What is stored, and where</h2>
+      <p>All data lives in <code>chrome.storage.local</code> on the device. Nothing is stored in <code>chrome.storage.sync</code>, so it is never replicated to your Google account or other devices.</p>
+      <table>
+        <tr><th>Key</th><th>Contents</th></tr>
+        <tr><td><code>muninn.schemaVersion</code></td><td>A number used for future data migrations.</td></tr>
+        <tr><td><code>muninn.cards</code></td><td>Your context cards: title, body (raw markdown), tags, timestamps, pinned flag, and whether the card was typed or captured.</td></tr>
+        <tr><td><code>muninn.settings</code></td><td>Your provider choice, model, API key, default tone and strength, the injection template and toggle, and your feature on/off toggles.</td></tr>
+      </table>
+
+      <h3>Your API key</h3>
+      <ul>
+        <li>Stored only in <code>chrome.storage.local</code>, never in <code>chrome.storage.sync</code>.</li>
+        <li>Masked in the Options UI, shown only if you click "Show".</li>
+        <li>Never written to logs or error messages. Provider error text is scrubbed of the key before it is ever displayed.</li>
+        <li>Sent only to the provider you selected, and only when you run a prompt upgrade in BYOK mode. For on-page Enhance, the request is made by Muninn's background worker, so the key never enters or is exposed to the web page you are on.</li>
+      </ul>
+
+      <h2>Network activity</h2>
+      <table>
+        <tr><th>When</th><th>Where</th><th>Why</th></tr>
+        <tr><td>You run a <strong>Local</strong> prompt upgrade</td><td>Nowhere. It runs entirely in the browser.</td><td>No network call is possible in this mode.</td></tr>
+        <tr><td>You run a <strong>BYOK</strong> prompt upgrade (popup or on-page Enhance)</td><td>Directly to <code>api.anthropic.com</code> or <code>api.openai.com</code>, whichever you chose.</td><td>To rewrite your prompt with your own key.</td></tr>
+      </table>
+      <p>Muninn requests permission to contact a provider's API host only when you save a key or first use BYOK, via <code>optional_host_permissions</code>. If you never use BYOK, that permission is never granted. There are no other outbound requests of any kind.</p>
+
+      <h2>What Muninn does not do</h2>
+      <ul>
+        <li>It does not read, store, or transmit your conversations automatically, and it never transmits them. Full-chat capture reads the visible thread only at the moment you click it, only to fill a card you choose to save.</li>
+        <li>It does not auto-capture, scrape, or background-log page content. Capturing text is always a manual, explicit click, and the captured text only populates a new-card form locally.</li>
+        <li>It does not track usage, count tokens, or collect analytics.</li>
+        <li>It does not request broad permissions (no <code>&lt;all_urls&gt;</code>, no general <code>tabs</code> access). The content script runs only on <code>claude.ai</code>, <code>chatgpt.com</code>, <code>chat.openai.com</code>, and <code>gemini.google.com</code>.</li>
+      </ul>
+
+      <h2>Your control over your data</h2>
+      <p>From the Options page you can:</p>
+      <ul>
+        <li><strong>Export</strong> all Muninn data to a JSON file. This includes your API key, so treat the file as a secret.</li>
+        <li><strong>Import</strong> data from such a file, which replaces current data.</li>
+        <li><strong>Wipe all data</strong>, which clears everything Muninn has stored on the device.</li>
+      </ul>
+
+      <h2>Third parties</h2>
+      <p>When you use BYOK mode, your prompt is sent to the provider you chose (Anthropic or OpenAI). Their handling of that request is governed by their privacy policy and terms. Muninn is not involved beyond making the direct request you asked for.</p>
+
+      <h2>Contact</h2>
+      <p>Muninn is an open, client-side tool with no data collection. Questions about the code or its behavior are best answered by reading the source in the repository.</p>
+    </div>
+  </main>
+
+  <footer>
+    <div class="foot-in">
+      <span style="color:var(--muted);font-weight:600;">Muninn</span>
+      <span>Client-side. Open source.</span>
+      <span style="margin-left:auto;"><a href="index.html">Back to home</a></span>
+    </div>
+  </footer>
+</body>
+</html>
