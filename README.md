@@ -21,15 +21,19 @@ Muninn ever makes are the ones *you* trigger to *your* chosen LLM provider.
 - Create, edit, pin, delete, and fuzzy-search cards (search matches title + tags).
 - Markdown bodies, stored raw with a live preview.
 - Pinned cards always sort to the top.
-- An on-page **launcher** on the four supported sites: a small draggable, collapsible raven button
-  that expands into a card panel. Click a card to **append** its body into the chat input (it never
-  overwrites what you've typed). The launcher remembers its position per-site.
-  - **Adaptive theming:** the launcher adopts the host AI's own palette so it reads as a native,
-    first-party feature, not a bolted-on extension — warm clay on Claude, monochrome graphite on
-    ChatGPT, blue→violet on Gemini. Muninn's own popup and options carry its "warm ink & ember"
-    identity. See [DESIGN.md](./DESIGN.md).
-- **Capture** (always an explicit click): grab your current text selection — or the last message if
-  nothing is selected — straight into a new card. Muninn never auto-captures or logs conversations.
+- An on-page **dock** on the four supported sites: a small row of buttons just above the chat
+  composer, right-aligned to it. The **raven** opens a card panel — click a card to **append** its
+  body into the chat input (it never overwrites what you've typed). The second button opens **Enhance
+  Prompt** (see below). The dock auto-anchors above the composer and tracks it as the page scrolls;
+  the panel opens just above the dock.
+  - **One consistent theme:** Muninn uses a single neutral-graphite identity with one electric-blue
+    accent (`#3b82f6`) across the popup, options, and the on-page launcher. Blue is reserved for
+    action, selection, and focus. See [DESIGN.md](./DESIGN.md).
+- **Capture** (always an explicit click): save context to a new card from one of three sources, with
+  a preview before you save: your current **selection**, the **last message**, or the **full chat**
+  (the whole visible thread). Selection is offered only when text is selected; if the full chat can't
+  be read, Muninn says so instead of saving an empty card. Muninn never auto-captures or logs
+  conversations.
 - Optional **context template** (on by default, fully editable) that wraps injected cards so the
   model acknowledges the context before acting.
 
@@ -37,13 +41,22 @@ Muninn ever makes are the ones *you* trigger to *your* chosen LLM provider.
 Shared controls: **tone** (Auto / Business / Creative / Technical) and **revision strength**
 (Conservative / Balanced / Radical).
 
+Available two ways: the **Upgrade** tab in the popup, and an on-page **Enhance Prompt** button (the
+second button in the dock) that refines what you've typed in the composer and can replace it in place.
+
 - **Local mode** — a deterministic, offline pipeline of small rules. It adds a persona line when
   none exists, requests an output format when none is detected, and expands terse prompts with a
   specificity clause. *Conservative* = persona + format; *Balanced* = + specificity; *Radical* =
   + full constraint scaffolding. **This mode never makes a network call.**
 - **Bring-your-own-key (BYOK) mode** — calls your chosen provider (**Anthropic** or **OpenAI**)
-  directly with your key, streaming the response. Providers are config entries, so adding more is
-  trivial.
+  with your key. In the popup the response streams in; the on-page Enhance routes the request
+  through Muninn's background worker, so **your key never enters the web page**. Providers are config
+  entries, so adding more is trivial.
+
+### Turn anything off
+Every feature can be disabled independently from **Options**: the on-page launcher, the Capture
+button, and Prompt Upgrade (both its popup tab and the on-page Enhance button). Disabling a feature
+hides it everywhere; your saved cards are never affected.
 
 ---
 
@@ -103,10 +116,10 @@ src/
   lib/            Pure, testable core: storage, cards, search, template, prompt engine
     prompt/local/   Offline rule pipeline (Mode A)
     prompt/providers/  Provider configs (Anthropic, OpenAI) + BYOK caller (Mode B)
-  content/        Content script: Shadow-DOM launcher + per-site adapters
+  content/        Content script: Shadow-DOM dock (memory + enhance panels) + per-site adapters
   popup/          Toolbar popup (Memory + Upgrade tabs)
   options/        Options / data-control page
-  ui/             Shared components, theme tokens, hooks, the raven mark
+  ui/             Shared components, theme tokens, hooks, the raven + enhance marks
   test/           Vitest setup (in-memory chrome.storage mock)
 ```
 
@@ -115,7 +128,9 @@ React 18 · TypeScript · Tailwind CSS · Vite + CRXJS (Manifest V3) · Vitest.
 
 ## Tests
 `npm test` covers the local prompt-upgrade rules, the card logic, fuzzy search, the storage layer
-(including export/import/wipe and migrations), template wrapping, and the provider request builders.
+(including export/import/wipe and migrations), template wrapping, the provider request builders, the
+background upgrade messaging, and the on-page dock (card insert, capture, local enhance, and the
+feature toggles across the dock, popup, and options).
 
 ## Permissions, briefly
 - `storage` — the only data store (cards, settings, the local API key).
